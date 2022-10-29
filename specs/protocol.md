@@ -17,11 +17,11 @@ The server, as soon as he sends an answer
 #### Request
 The data is sent as a formatted String
 
-The syntax is <1stOperand> <Operation> <2cdOperand>
+The syntax is `<1stOperand> <Operation> <2cdOperand>`
 
 The 1st and second Operand are composed of a potentially decimal number
 
-The Operation is one of the following : + - * /
+The Operation is one of the following : `+` `-` `*` `/`
 
 #### Answer
 The data is sent as a formatted String
@@ -58,6 +58,6 @@ It's easy to add operators
 Adding parenthesis would require changing the syntax of sent messages
 
 ## Examples: examples of some typical dialogs.
-Client : 1 + 2
+Client : `1 + 2`
 
-Server : 3
+Server : `3`
