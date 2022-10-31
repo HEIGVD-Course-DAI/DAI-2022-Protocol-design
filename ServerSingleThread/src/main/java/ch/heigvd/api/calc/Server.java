@@ -84,6 +84,7 @@ public class Server {
 
         final String RESULT     = "RESULT ";
         final String ERROR      = "ERROR UNKNOWN OPERATION";
+        final String ERROR_PARA = "ERROR WRONG PARAMETERS";
         final String QUIT       = "END OF CONNECTION";
 
         BufferedWriter writer = null;
@@ -91,38 +92,44 @@ public class Server {
 
         try {
             writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream(), StandardCharsets.UTF_8));
+            reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), StandardCharsets.UTF_8));
 
             writer.write(String.format("%s\n%s\n%s\n%s\n%s\n%s\n", AVAILABLE, ADD, SUB, MULT, DIV, END));
             writer.flush();
 
-            boolean reading = true;
-            while (reading) {
-                reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), StandardCharsets.UTF_8));
-
-                String[] args = reader.readLine().trim().split("\\s+");
+            while (true) {
+                String[] args = reader.readLine().trim().split(" ");
                 String output = RESULT;
-                int firstOperand = Integer.parseInt(args[1]);
-                int secondOperand = Integer.parseInt(args[2]);
-                switch (args[0]) {
-                    case "ADD":
-                        output += (firstOperand + secondOperand);
-                        break;
-                    case "SUB":
-                        output += (firstOperand - secondOperand);
-                        break;
-                    case "MULT":
-                        output += (firstOperand * secondOperand);
-                        break;
-                    case "DIV":
-                        output += (firstOperand / secondOperand);
-                        break;
-                    case "QUIT":
-                        reading = false;
+
+                int firstOperand;
+                int secondOperand;
+                try {
+                    if (args[0].equals("QUIT")) {
                         output = QUIT;
-                        break;
-                    default:
-                        output = ERROR;
-                        break;
+                    } else {
+                        firstOperand = Integer.parseInt(args[1]);
+                        secondOperand = Integer.parseInt(args[2]);
+
+                        switch (args[0]) {
+                            case "ADD":
+                                output += (firstOperand + secondOperand);
+                                break;
+                            case "SUB":
+                                output += (firstOperand - secondOperand);
+                                break;
+                            case "MULT":
+                                output += (firstOperand * secondOperand);
+                                break;
+                            case "DIV":
+                                output += (firstOperand / secondOperand);
+                                break;
+                            default:
+                                output = ERROR;
+                                break;
+                        }
+                    }
+                } catch (Exception ex) {
+                    output = ERROR_PARA;
                 }
 
                 writer.write(String.format("%s\n", output));
