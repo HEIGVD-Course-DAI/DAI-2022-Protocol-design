@@ -92,41 +92,31 @@ public class ServerWorker implements Runnable {
                 }
 
                 if(s.startsWith("✖")){
-                    String[] params = s.split(" ");
-                    if(params.length != 3) {
-                        sendError("Bad number of params");
-                        continue;
-                    }
-                    int i1, i2;
+                    final int numberOfParams = 2;
+                    int[] values;
                     try {
-                        i1 = Integer.parseInt(params[1]);
-                        i2 = Integer.parseInt(params[2]);
+                        values= getParameters(s, numberOfParams);
                     } catch (Exception e) {
-                        sendError("bad params");
+                        sendError(e.getMessage());
                         continue;
                     }
 
-                    out.write("🟰 " + i1 * i2 + "\n");
+                    out.write("🟰 " + (values[0] * values[1]) + "\n");
                     out.flush();
                     continue;
                 }
 
                 if(s.startsWith("➕")){
-                    String[] params = s.split(" ");
-                    if(params.length != 3) {
-                        sendError("Bad number of params");
-                        continue;
-                    }
-                    int i1, i2;
+                    final int numberOfParams = 2;
+                    int[] values;
                     try {
-                        i1 = Integer.parseInt(params[1]);
-                        i2 = Integer.parseInt(params[2]);
+                        values= getParameters(s, numberOfParams);
                     } catch (Exception e) {
-                        sendError("bad params");
+                        sendError(e.getMessage());
                         continue;
                     }
 
-                    out.write("🟰 " + (i1 + i2) + "\n");
+                    out.write("🟰 " + (values[0] + values[1]) + "\n");
                     out.flush();
                     continue;
                 }
@@ -149,6 +139,20 @@ public class ServerWorker implements Runnable {
     private void sendListOperation() throws IOException {
         out.write("📃 ➕, ✖\n");
         out.flush();
+    }
+
+    private int[] getParameters(String in, int numberOfParams) {
+        int[] res = new int[numberOfParams];
+        String[] params = in.split(" ");
+        if(params.length - 1 != numberOfParams) {
+            throw new RuntimeException("Bad number of params");
+        }
+
+        for (int i = 0; i < numberOfParams; i++) {
+            res[i] = Integer.parseInt(params[i + 1]);
+        }
+
+        return res;
     }
 
 
