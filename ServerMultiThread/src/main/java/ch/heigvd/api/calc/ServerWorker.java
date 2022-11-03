@@ -12,7 +12,9 @@ import java.util.logging.Logger;
 public class ServerWorker implements Runnable {
 
     private final static Logger LOG = Logger.getLogger(ServerWorker.class.getName());
-
+    private Socket clientSocket;
+    private BufferedReader in = null;
+    private BufferedWriter out = null;
     /**
      * Instantiation of a new worker mapped to a socket
      *
@@ -21,6 +23,8 @@ public class ServerWorker implements Runnable {
     public ServerWorker(Socket clientSocket) {
         // Log output on a single line
         System.setProperty("java.util.logging.SimpleFormatter.format", "%4$s: %5$s%6$s%n");
+        this.clientSocket = clientSocket;
+
 
         /* TODO: prepare everything for the ServerWorker to run when the
          *   server calls the ServerWorker.run method.
@@ -34,6 +38,27 @@ public class ServerWorker implements Runnable {
      */
     @Override
     public void run() {
+
+        while (!clientSocket.isClosed()) {
+            try {
+                in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
+                System.out.println(in.readLine());
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            try {
+                clientSocket.close();
+                in.close();
+                out.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+
+        }
+
 
         /* TODO: implement the handling of a client connection according to the specification.
          *   The server has to do the following:
