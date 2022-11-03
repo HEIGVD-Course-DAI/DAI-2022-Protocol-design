@@ -1,8 +1,11 @@
 package ch.heigvd.api.calc;
 
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.logging.Level;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.util.Arrays;
 import java.util.logging.Logger;
 
 /**
@@ -10,7 +13,28 @@ import java.util.logging.Logger;
  */
 public class Client {
 
-    private static final Logger LOG = Logger.getLogger(Client.class.getName());
+    //private static final Logger LOG = Logger.getLogger(Client.class.getName());
+
+    public static void execute(BufferedReader stdin, InputStream in, OutputStream out) {
+        /* DONE
+         *     - read the command from the user on stdin (already created)
+         *     - send the command to the server
+         *     - read the response line from the server (using BufferedReader.readLine)
+         *
+         * TODO Test functionality once the server is done
+         */
+
+        try {
+            String input = stdin.readLine();
+            out.write(input.getBytes());
+            String result = Arrays.toString(in.readAllBytes());
+            System.out.println("\"" + input + "\"' = \"" + result + "\"");
+        } catch (Exception e) {
+            throw new RuntimeException("Couldn't communicate with server.");
+        }
+
+
+    }
 
     /**
      * Main function to run client
@@ -21,9 +45,9 @@ public class Client {
         // Log output on a single line
         System.setProperty("java.util.logging.SimpleFormatter.format", "%4$s: %5$s%6$s%n");
 
-        BufferedReader stdin = null;
+        BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
 
-        /* TODO: Implement the client here, according to your specification
+        /* DONE: Implement the client here, according to your specification
          *   The client has to do the following:
          *   - connect to the server
          *   - initialize the dialog with the server according to your specification
@@ -33,7 +57,18 @@ public class Client {
          *     - read the response line from the server (using BufferedReader.readLine)
          */
 
-        stdin = new BufferedReader(new InputStreamReader(System.in));
+        boolean running = true;
 
+        try (Socket socket = new Socket("127.0.0.1", 8080);
+             InputStream fromServer = socket.getInputStream();
+             OutputStream toServer = socket.getOutputStream()) {
+            while (running) {
+                execute(stdin, fromServer, toServer);
+                System.out.println("Do you want to execute another calculation ? (y/n): ");
+                running = stdin.readLine().equalsIgnoreCase("y");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 }
