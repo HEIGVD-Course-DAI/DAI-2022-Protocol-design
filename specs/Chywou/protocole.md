@@ -1,44 +1,57 @@
 Protocol objectives: what does the protocol do?
-permettre les opérations d'addition, de soustraction, de multiplication et de division
+
+communication between client server, 1 client at time, client initiate conversation, when request is over close connection and wait for a new one.
 Overall behavior:
 
 What transport protocol do we use?
-TCP
+
+    TCP
 How does the client find the server (addresses and ports)?
-* Via son adresse et son port (port xxxx)
+
+    arbitrary values
+
 Who speaks first?
-* Le serveur donne les indications supportée au client
+
+    server gives instruction available
+
 Who closes the connection and when?
-* Le client indique qu'il n'a plus besoin de faire de calcul.
+
+    server when client is done with calculs
 
 Messages:
+
 What is the syntax of the messages?
-BONJOUR
-* Information sur les opération et leur syntaxe envoyé par le serveur
-CALCUL
-* Le calcul envoyé par le client
-RESULTAT
-* Le résultat par rapport au calcul du clien
-ERREUR
-* En cas d'erreur lors de la demande de calcul
-FIN
-* Fin demandée par le client
+
+information sent by the server containing the operation available
+
+    BONJOUR
+
+information sent by client containing operation to do
+
+    CALCUL <OPERAND> <OPERATOR> <OPERAND>
+information sent by server containing the result of the CALCUL
+
+    RESULTAT <RESULT>
+
+information sent by the client to stop the conversation
+
+    QUIT
+
+information sent by the server when CALCUL values are incorrect
+
+    ERREUR <MERROR MSG>
 
 What is the sequence of messages exchanged by the client and the server? (flow)
-* s: BONJOUR
-* c: CALCUL
-* s: RESULTAT
-* c: CALCUL (supposition : calcul faux)
-* s: ERREUR
-* c: FIN
-CALCUl est reappelable autant de fois que le client le souhaite jusqu'à l'utilisation de FIN
+- BONJOUR (serveur)
+- CALCUL (client)
+- RESULTAT (serveur)
+- QUIT (client)
 
 What happens when a message is received from the other party? (semantics)
-Il détecte le type de messages et y répond en fonction
+
 Specific elements (if useful)
 
 Supported operations
 Error handling
 Extensibility
-
 Examples: examples of some typical dialogs.
