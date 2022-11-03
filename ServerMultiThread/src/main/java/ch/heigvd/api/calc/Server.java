@@ -3,7 +3,8 @@ package ch.heigvd.api.calc;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.logging.Level;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 /**
@@ -33,6 +34,19 @@ public class Server {
          *  For a new client connection, the actual work is done in a new thread
          *  by a new ServerWorker.
          */
+        ServerSocket serverSocket = null;
+        Socket client = null;
+        ExecutorService pool;
+        try {
+            serverSocket = new ServerSocket(9999);
+            pool = Executors.newFixedThreadPool(1024);
+            while (true) {
+                client = serverSocket.accept();
+                pool.execute(new ServerWorker(client));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 }
