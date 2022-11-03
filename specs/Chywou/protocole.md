@@ -5,7 +5,7 @@ Overall behavior:
 
 What transport protocol do we use?
 
-    TCP
+    TCP, port : 4000
 How does the client find the server (addresses and ports)?
 
     arbitrary values
