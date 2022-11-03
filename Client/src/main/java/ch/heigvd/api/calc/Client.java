@@ -5,13 +5,17 @@ import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.util.logging.Logger;
 
 /**
  * Calculator client implementation
  */
 public class Client {
 
-    //private static final Logger LOG = Logger.getLogger(Client.class.getName());
+    private static final String HOST = "127.0.0.1";
+    private static final int PORT = 1313;
+
+    private static final Logger LOG = Logger.getLogger(Client.class.getName());
 
     public static void execute(BufferedReader stdin, BufferedReader in, BufferedWriter out) {
         /* DONE
@@ -58,7 +62,7 @@ public class Client {
 
         boolean running = true;
 
-        try (Socket socket = new Socket("127.0.0.1", 1313);
+        try (Socket socket = new Socket(HOST, PORT);
              BufferedReader fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
              BufferedWriter toServer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()))) {
             while (running) {
