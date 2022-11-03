@@ -15,6 +15,7 @@ public class ServerWorker implements Runnable {
     private Socket clientSocket;
     private BufferedReader in = null;
     private BufferedWriter out = null;
+
     /**
      * Instantiation of a new worker mapped to a socket
      *
@@ -43,18 +44,27 @@ public class ServerWorker implements Runnable {
             try {
                 in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
-                System.out.println(in.readLine());
+                String msg = in.readLine();
+                System.out.println(msg);
+
+                if (msg.equals("CLOSE")) {
+                    out.write("Closing connexion. Goodbye Jarod!\r\n");
+                    out.flush();
+                    clientSocket.close();
+                    in.close();
+                    out.close();
+                }
 
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            try {
-                clientSocket.close();
-                in.close();
-                out.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+//            try {
+//                clientSocket.close();
+//                in.close();
+//                out.close();
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
 
 
         }
