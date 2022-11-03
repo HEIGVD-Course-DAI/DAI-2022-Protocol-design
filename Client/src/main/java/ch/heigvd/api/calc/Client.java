@@ -1,7 +1,9 @@
 package ch.heigvd.api.calc;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,6 +34,40 @@ public class Client {
          *     - send the command to the server
          *     - read the response line from the server (using BufferedReader.readLine)
          */
+        Socket client = null;
+        BufferedReader is = null;
+
+        try {
+            client = new Socket("ip oscar", 3333);
+            stdin = new BufferedReader(new InputStreamReader(System.in));
+
+            PrintWriter out = new PrintWriter(client.getOutputStream(), true,  StandardCharsets.UTF_8);
+            is = new BufferedReader(new InputStreamReader(client.getInputStream(), StandardCharsets.UTF_8));
+
+            out.println("WELCOME");
+
+            String welcome = stdin.readLine();
+            System.out.println(welcome);
+            String operations = stdin.readLine();
+            System.out.println(operations);
+
+            String input = "";
+            String read = "";
+            while (true) {
+                input = stdin.readLine();
+                input = input.toUpperCase();
+
+                if (input.equals("END CONNECTION")) break;
+
+                out.println(input);
+                read = is.readLine();
+                System.out.println(read);
+            }
+            out.println("END CONNECTION");
+            client.close();
+        } catch (IOException e) {
+            LOG.log(Level.SEVERE, null, e);
+        }
 
         stdin = new BufferedReader(new InputStreamReader(System.in));
 
