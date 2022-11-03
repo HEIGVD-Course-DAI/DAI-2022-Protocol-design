@@ -1,12 +1,10 @@
 package ch.heigvd.api.calc;
 
 import java.io.BufferedReader;
-import java.io.InputStream;
+import java.io.BufferedWriter;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.Socket;
-import java.util.Arrays;
-import java.util.logging.Logger;
 
 /**
  * Calculator client implementation
@@ -15,7 +13,7 @@ public class Client {
 
     //private static final Logger LOG = Logger.getLogger(Client.class.getName());
 
-    public static void execute(BufferedReader stdin, InputStream in, OutputStream out) {
+    public static void execute(BufferedReader stdin, BufferedReader in, BufferedWriter out) {
         /* DONE
          *     - read the command from the user on stdin (already created)
          *     - send the command to the server
@@ -26,9 +24,10 @@ public class Client {
 
         try {
             String input = stdin.readLine();
-            out.write(input.getBytes());
-            String result = Arrays.toString(in.readAllBytes());
-            System.out.println("\"" + input + "\"' = \"" + result + "\"");
+            out.write(input);
+            out.flush();
+            String result = in.readLine();
+            System.out.println("" + input + " = " + result);
         } catch (Exception e) {
             throw new RuntimeException("Couldn't communicate with server.");
         }
@@ -59,9 +58,9 @@ public class Client {
 
         boolean running = true;
 
-        try (Socket socket = new Socket("127.0.0.1", 8080);
-             InputStream fromServer = socket.getInputStream();
-             OutputStream toServer = socket.getOutputStream()) {
+        try (Socket socket = new Socket("127.0.0.1", 1313);
+             BufferedReader fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+             BufferedWriter toServer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()))) {
             while (running) {
                 execute(stdin, fromServer, toServer);
                 System.out.println("Do you want to execute another calculation ? (y/n): ");
