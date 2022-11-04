@@ -1,71 +1,71 @@
 # Protocol objectives: what does the protocol do?
 
-Communication serveur client : le serveur renvoit le résultat du calcul envoyé par le client
+    Communication serveur client : le serveur renvoit le résultat 
+    du calcul envoyé par le client
 
-# Overall behavior:
+## Overall behavior:
 ### What transport protocol do we use?
 
-TCP
+    TCP
 
 ### How does the client find the server (addresses and ports)?
 
-Connu au moment du lancement du programme
+    Connu au moment du lancement du programme
 
 ### Who speaks first?
 
-le client
+    le client
 
 ### Who closes the connection and when?
 
-le client, lorsqu'il ferme l'application (et eventuellement le serveur après un timeout ?)
+    le client, lorsqu'il ferme l'application (et eventuellement le 
+    serveur après un timeout ?)
 
-# Messages:
+## Messages:
 ### What is the syntax of the messages?
 
-gestion de paranthèse pour les priorités
-Utilisation d'un . pour les nombres à virgule
+    Gestion de paranthèse pour les priorités
+    Utilisation d'un . pour les nombres à virgule
 
 ### What is the sequence of messages exchanged by the client and the server? (flow)
 
-client :
-"open"
-"*calcul*"
-"close"
+    client :
+    "open"
+    "*calcul*"
+    "close"
 
-serveur :
-"connection ok"
-"*résultat*"
-"error in pattern"
+    serveur :
+    "connection ok"
+    "*résultat*"
+    "error in pattern"
 
 ### What happens when a message is received from the other party? (semantics)
 
-client :
-"open" -> ouvre connecxion
-"*calcul*" -> retourne résulats ou erreur
-"close" -> ferme connexion
+    client :
+    "open" -> ouvre connecxion
+    "*calcul*" -> retourne résulats ou erreur
+    "close" -> ferme connexion
 
-serveur :
-"connection ok" permet les calculs
-"*résultat*" rien
-"error" rien
+    serveur :
+    "connection ok" permet les calculs
+    "*résultat*" rien
+    "error" rien
 
-# Specific elements (if useful)
+### Specific elements (if useful)
 ### Supported operations
-+ - * /
+    '+ - * /
 ### Error handling
-
-"error in pattern"
+    "error in pattern"
 
 ### Extensibility
+    ajout d'opérations
+    calcul avec plus que 2 nombres
 
-ajout d'opérations
-calcul avec plus que 2 nombres
+## Examples: examples of some typical dialogs.
 
-### Examples: examples of some typical dialogs.
-
-C -> open
-S <- connection ok
-C -> calcule
-S <- résulat ou erreur
-...
-C -> close
+    C -> open
+    S <- connection ok
+    C -> calcule
+    S <- résulat ou erreur
+    ...
+    C -> close

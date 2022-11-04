@@ -1,7 +1,8 @@
 package ch.heigvd.api.calc;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,7 +34,30 @@ public class Client {
          *     - read the response line from the server (using BufferedReader.readLine)
          */
 
+        BufferedReader is = null;
+        BufferedWriter os = null;
+        Socket clientSocket = null;
+
+        try {
+            clientSocket = new Socket("10.191.4.112", 7777);
+            is = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), StandardCharsets.UTF_8));
+            os = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream(), StandardCharsets.UTF_8));
+            String cal = "2+2" + "\n";
+            os.write(cal);
+            os.flush();
+            System.out.println("message send");
+
+            String line = is.readLine();
+            System.out.println(line);
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         stdin = new BufferedReader(new InputStreamReader(System.in));
+
+
+
 
     }
 }
