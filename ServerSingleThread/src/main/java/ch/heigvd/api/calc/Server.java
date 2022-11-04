@@ -3,6 +3,7 @@ package ch.heigvd.api.calc;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -11,6 +12,10 @@ import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.IOException;
+
+import javax.script.*;
+
+import static java.lang.Integer.parseInt;
 
 
 /**
@@ -29,6 +34,9 @@ public class Server {
 
         (new Server()).start();
     }
+
+
+
 
     /**
      * Start the server on a listening socket.
@@ -68,18 +76,63 @@ public class Server {
         BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), "UTF-8"));
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream(), "UTF-8"));
 
-        String line;
-        int i = 5;
-        while(i > 0) {
-            --i;
-            System.out.println("attente");
-            line = reader.readLine();
-            System.out.println("message recu" + line);
-            writer.write("I'm not working, sorry\n");
+        String line = reader.readLine();
+        while(!Objects.equals(line, "close")) {
+            System.out.println("message recu |" + line + "|");
+            if(Objects.equals(line, "hello") || Objects.equals(line, "help")){
+                writer.write("Bonjour, entrez votre calcul, les opérations supporée sont + - * / ex. |3 * 4 + 5|, " +
+                        "mon développeur étant paresseux les paranthèse ne sont pas traitée ni la priorité des opérations\n");
+            }else{
+                line = line.replaceAll("\\s+", "");
+                String[] val =line.split("[*/+-]");
+                List<Character> op = new ArrayList<>();
+                boolean formatOk = true;
+                for (int i = 0; i < line.length(); ++i){
+                    char c = line.charAt(i);
+                    if(c == '+' || c == '-' ||c == '*' ||c == '/'){
+                        op.add(c);
+                        continue;
+                    }
+                    if(c >= '0' && c <= '9')continue;
+                    formatOk = false;
+                }
+                if(val.length != op.size() + 1)formatOk = false;
+
+                System.out.println(Arrays.toString(val));
+                System.out.println(op);
+
+                if(formatOk){
+                    double res = parseInt(val[0]);
+                    for(int i = 0;i < op.size();++i){
+                        double newVal = parseInt(val[i+1]);
+                        switch (op.get(i)){
+                            case '*':
+                                res *= newVal;
+                                break;
+                            case '/':
+                                res /= newVal;
+                                break;
+                            case '+':
+                                res += newVal;
+                                break;
+                            case '-':
+                                res -= newVal;
+                                break;
+                        }
+                        System.out.println(res);
+                    }
+                    writer.write("resultat : " + res + "\n");
+                }else{
+                    writer.write("format incorrect\n");
+                }
+
+            }
             writer.flush();
+            line = reader.readLine();
         }
 
         writer.close();
         reader.close();
     }
 }
+
