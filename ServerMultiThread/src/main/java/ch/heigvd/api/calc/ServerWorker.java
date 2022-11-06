@@ -3,12 +3,11 @@ package ch.heigvd.api.calc;
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Calculator worker implementation
- */
+/** Calculator worker implementation */
 public class ServerWorker implements Runnable {
 
     private final static Logger LOG = Logger.getLogger(ServerWorker.class.getName());
@@ -16,30 +15,17 @@ public class ServerWorker implements Runnable {
     private BufferedReader in = null;
     private BufferedWriter out = null;
 
-    /**
-     * Instantiation of a new worker mapped to a socket
-     *
-     * @param clientSocket connected to worker
-     */
+    /** Instantiation of a new worker mapped to a socket
+     * @param clientSocket connected to worker */
     public ServerWorker(Socket clientSocket) {
         // Log output on a single line
         System.setProperty("java.util.logging.SimpleFormatter.format", "%4$s: %5$s%6$s%n");
         this.clientSocket = clientSocket;
-
-
-        /* TODO: prepare everything for the ServerWorker to run when the
-         *   server calls the ServerWorker.run method.
-         *   Don't call the ServerWorker.run method here. It has to be called from the Server.
-         */
-
     }
 
-    /**
-     * Run method of the thread.
-     */
+    /** Run method of the thread. */
     @Override
     public void run() {
-
         while (!clientSocket.isClosed()) {
             try {
                 in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -54,31 +40,61 @@ public class ServerWorker implements Runnable {
                     in.close();
                     out.close();
                 }
+                else{
+                    Double result = processOperation(msg);
+                    if(result.isNaN())
+                        out.write("Invalid expression : " + msg);
+                    else
+                        out.write(result.toString());
+
+                    out.flush();
+                }
 
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-//            try {
-//                clientSocket.close();
-//                in.close();
-//                out.close();
-//            } catch (IOException e) {
-//                throw new RuntimeException(e);
-//            }
-
-
         }
+    }
 
-
-        /* TODO: implement the handling of a client connection according to the specification.
-         *   The server has to do the following:
-         *   - initialize the dialog according to the specification (for example send the list
-         *     of possible commands)
-         *   - In a loop:
-         *     - Read a message from the input stream (using BufferedReader.readLine)
-         *     - Handle the message
-         *     - Send to result to the client
-         */
-
+    private Double processOperation(String msg){
+        Stack<Double> valStack = new Stack<>();
+        Stack<Character> opStack = new Stack<>();
+        StringBuilder s = new StringBuilder();
+        for(int i = 0; i < msg.length(); ++i){
+            char c = msg.charAt(i);
+            if(c == ' ' || c == '('){
+                //Do nothing
+            }
+            else if(Character.isDigit(c)){
+                 for(int j = 0; Character.isDigit(msg.charAt(i + j)); j++){
+                     s.append(msg.charAt(i + j));
+                     if(i + j == msg.length() - 1)
+                         break;
+                 }
+                valStack.push(Double.parseDouble(s.toString()));
+                if(i < msg.length() - 1)
+                    i += s.length() - 1;
+                s.delete(0, s.length());
+            }
+            else if(c == ')'){
+                double v = valStack.pop();
+                char op = opStack.pop();
+                if (op == '+') {
+                    v = valStack.pop() + v;
+                } else if (op == '-') {
+                    v = valStack.pop() - v;
+                } else if (op == '*') {
+                    v = valStack.pop() * v;
+                } else if (op == '/') {
+                    v = valStack.pop() / v;
+                }
+                valStack.push(v);
+            }
+            else if(c == '+' || c == '-' || c == '*' || c == '/'){
+                opStack.push(c);
+            }
+            else return Double.NaN;
+        }
+        return valStack.pop();
     }
 }
