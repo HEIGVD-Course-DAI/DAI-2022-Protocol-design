@@ -38,38 +38,40 @@ public class Client {
         BufferedReader is = null;
 
         try {
-            client = new Socket("ip oscar", 3333);
+            client = new Socket("10.191.2.241", 3333);
             stdin = new BufferedReader(new InputStreamReader(System.in));
 
             PrintWriter out = new PrintWriter(client.getOutputStream(), true,  StandardCharsets.UTF_8);
             is = new BufferedReader(new InputStreamReader(client.getInputStream(), StandardCharsets.UTF_8));
 
-            out.println("WELCOME");
+            out.println("WELCOME");         // Sends WELCOME to the server
+            System.out.println("WELCOME");
 
-            String welcome = stdin.readLine();
-            System.out.println(welcome);
-            String operations = stdin.readLine();
-            System.out.println(operations);
+            // reads WELCOME RECIEVED
+            System.out.println(is.readLine());
+            // reads LISTOPERATION [...]
+            System.out.println(is.readLine());
 
             String input = "";
             String read = "";
+
             while (true) {
                 input = stdin.readLine();
                 input = input.toUpperCase();
 
                 if (input.equals("END CONNECTION")) break;
 
-                out.println(input);
-                read = is.readLine();
+                out.println(input);         // sends the input to the server
+                read = is.readLine();       // reads the result of the request
                 System.out.println(read);
             }
             out.println("END CONNECTION");
+            System.out.println(is.readLine());
             client.close();
         } catch (IOException e) {
             LOG.log(Level.SEVERE, null, e);
         }
 
         stdin = new BufferedReader(new InputStreamReader(System.in));
-
     }
 }
