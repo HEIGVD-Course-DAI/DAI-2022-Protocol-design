@@ -1,8 +1,10 @@
 package ch.heigvd.api.calc;
 
+import javax.swing.*;
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -12,6 +14,12 @@ import java.util.logging.Logger;
 public class ServerWorker implements Runnable {
 
     private final static Logger LOG = Logger.getLogger(ServerWorker.class.getName());
+
+    private BufferedReader in;
+    private BufferedWriter out;
+    private String[] supportedOp = new String[] {"+","*","/"};
+
+
 
     /**
      * Instantiation of a new worker mapped to a socket
@@ -26,7 +34,12 @@ public class ServerWorker implements Runnable {
          *   server calls the ServerWorker.run method.
          *   Don't call the ServerWorker.run method here. It has to be called from the Server.
          */
-
+        try{
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(),"UTF-8"));
+            out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
+        } catch (IOException e){
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -44,6 +57,131 @@ public class ServerWorker implements Runnable {
          *     - Handle the message
          *     - Send to result to the client
          */
+        boolean connected = false;
+        boolean connectionAlive = true;
+        try{
+            while(connectionAlive){
+                String msg = in.readLine().toUpperCase();
+                System.out.println(msg);
+                if(!connected){
+                    if(!msg.startsWith("WELCOME")){
+                        sendError(0, "Wrong connection message");
+                    } else {
+                        connected = true;
+                        sendWelcome();
+                        sendOperations();
+                    }
+                    continue;
+                }
 
+                // implementation
+                if(msg.startsWith("CALCUL")){
+                    String[] params = msg.split(" ");
+                    if(params.length != 4){
+                        //gérer erreur
+                        sendError(2,"Syntax error, CALCUL leftValue operand rightValue is the format");
+                        continue;
+                    }
+                    int l, r;
+                    try{
+                        l = Integer.parseInt(params[1]);
+                        r = Integer.parseInt(params[3]);
+                    } catch(Exception e){
+                        // gerer erreur
+                        sendError(2,"Syntax error, CALCUL leftValue operand rightValue is the format");
+                        continue;
+                    }
+
+                    switch(params[2]){
+                        case "+":
+                            sendResult(l + r);
+                            continue;
+                        case "/":
+                            sendResult(l / r);
+                            continue;
+                        case "*":
+                            sendResult(l * r);
+                            continue;
+                        default:
+                            // si on arrive ici c'est que l'operation n'est pas géré
+                            sendError(1,"Operation not suported");
+                            continue;
+                    }
+                }
+
+                if(msg.startsWith("END CONNECTION")){
+                    sendEnd();
+                    connected = false;
+                    connectionAlive = false;
+                    continue;
+                }
+
+                sendError(3,"Unsupported request");
+            }
+        } catch (IOException e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void sendResult(int result){
+        String msg = "RESULT " + result + "\n";
+        try{
+            out.write(msg);
+            System.out.print(msg);
+            out.flush();
+        } catch (Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void sendError(int nb,String error){
+        String msg = "ERROR " + nb + " : " + error + "\n";
+        try{
+            out.write(msg);
+            System.out.print(msg);
+            out.flush();
+        } catch (Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void sendEnd(){
+        String msg = "END CONNECTION OK\n";
+        try{
+            out.write(msg);
+            System.out.print(msg);
+            out.flush();
+        } catch(Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+    private void sendWelcome(){
+        String msg = "WELCOME RECEIVED\n";
+        try{
+            out.write(msg);
+            System.out.print(msg);
+            out.flush();
+        }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+    private void sendOperations(){
+        String msg = "LISTOPERATION [ ";
+        try{
+            for(int i = 0; i < supportedOp.length; ++i){
+                if(i != 0){
+                    msg += " , ";
+                }
+                msg += supportedOp[i];
+            }
+            out.write(msg +" ]\n");
+            System.out.println(msg +" ]\n");
+            out.flush();
+
+        }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
     }
 }
