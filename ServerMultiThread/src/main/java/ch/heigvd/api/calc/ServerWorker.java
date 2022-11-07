@@ -58,16 +58,18 @@ public class ServerWorker implements Runnable {
          *     - Send to result to the client
          */
         boolean connected = false;
+        boolean connectionAlive = true;
         try{
-            for(;;){
+            while(connectionAlive){
                 String msg = in.readLine().toUpperCase();
                 System.out.println(msg);
                 if(!connected){
-                    if(!msg.equals("WELCOME RECEIVED")){
+                    if(!msg.startsWith("WELCOME")){
                         sendError(0, "Wrong connection message");
                     } else {
-                        sendOperations();
                         connected = true;
+                        sendWelcome();
+                        sendOperations();
                     }
                     continue;
                 }
@@ -93,13 +95,13 @@ public class ServerWorker implements Runnable {
                     switch(params[2]){
                         case "+":
                             sendResult(l + r);
-                            break;
+                            continue;
                         case "/":
                             sendResult(l / r);
-                            break;
+                            continue;
                         case "*":
                             sendResult(l * r);
-                            break;
+                            continue;
                         default:
                             // si on arrive ici c'est que l'operation n'est pas géré
                             sendError(1,"Operation not suported");
@@ -107,10 +109,14 @@ public class ServerWorker implements Runnable {
                     }
                 }
 
-                if(msg.startsWith("CONNECTION END")){
+                if(msg.startsWith("END CONNECTION")){
                     sendEnd();
                     connected = false;
+                    connectionAlive = false;
+                    continue;
                 }
+
+                sendError(3,"Unsupported request");
             }
         } catch (IOException e){
             throw new RuntimeException(e);
@@ -118,8 +124,10 @@ public class ServerWorker implements Runnable {
     }
 
     private void sendResult(int result){
+        String msg = "RESULT " + result + "\n";
         try{
-            out.write("RESULT " + result + "\n");
+            out.write(msg);
+            System.out.print(msg);
             out.flush();
         } catch (Exception e){
             throw new RuntimeException(e);
@@ -127,8 +135,10 @@ public class ServerWorker implements Runnable {
     }
 
     private void sendError(int nb,String error){
+        String msg = "ERROR " + nb + " : " + error + "\n";
         try{
-            out.write("ERROR " + nb + " : " + error + "\n");
+            out.write(msg);
+            System.out.print(msg);
             out.flush();
         } catch (Exception e){
             throw new RuntimeException(e);
@@ -136,23 +146,39 @@ public class ServerWorker implements Runnable {
     }
 
     private void sendEnd(){
+        String msg = "END CONNECTION OK\n";
         try{
-            out.write("CONNECTION END OK\n");
+            out.write(msg);
+            System.out.print(msg);
             out.flush();
         } catch(Exception e){
             throw new RuntimeException(e);
         }
     }
-    private void sendOperations(){
+    private void sendWelcome(){
+        String msg = "WELCOME RECEIVED\n";
         try{
-            out.write("LISTOPERATION [ ");
+            out.write(msg);
+            System.out.print(msg);
+            out.flush();
+        }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+    private void sendOperations(){
+        String msg = "LISTOPERATION [ ";
+        try{
             for(int i = 0; i < supportedOp.length; ++i){
                 if(i != 0){
-                    out.write(" , ");
+                    msg += " , ";
                 }
-                out.write(supportedOp[i]);
+                msg += supportedOp[i];
             }
-            out.write(" ]\n");
+            out.write(msg +" ]\n");
+            System.out.println(msg +" ]\n");
+            out.flush();
+
         }
         catch(Exception e){
             throw new RuntimeException(e);
