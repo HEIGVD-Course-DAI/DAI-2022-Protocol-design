@@ -59,7 +59,7 @@ public class ServerWorker implements Runnable {
                             if(syntaxIsCorrect(msg)){
                                 try{
                                     Double result = processOperation(msg);
-                                    out.write("RESULT " + result);
+                                    out.write("OK RESULT " + result);
                                 }catch(RuntimeException e){
                                     out.write("ERROR DEFINITION_DOMAIN " + e.getMessage());
                                 }
