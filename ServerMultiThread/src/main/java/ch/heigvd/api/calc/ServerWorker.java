@@ -106,8 +106,6 @@ public class ServerWorker implements Runnable {
                 stringNumber.append(c);
             }
         }
-        System.out.println("NB Parenthesis " + nbOpenParenthesis + " / " + nbClosedParenthesis);
-        System.out.println("Nb Operator " + nbOperator + " Nb operand " + nbOperands);
         if(nbClosedParenthesis != nbOpenParenthesis){
             return false;
         }
