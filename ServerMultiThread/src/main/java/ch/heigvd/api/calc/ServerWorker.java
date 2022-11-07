@@ -54,16 +54,23 @@ public class ServerWorker implements Runnable {
                     out.close();
                 } else if(msg.startsWith("COMPUTE")) {
                     msg = msg.substring(7);
-                    if(!syntaxIsCorrect(msg)) {
+
                         try {
-                            out.write("ERROR SYNTAX");
-                        } catch (IOException e) {
-                            e.printStackTrace();
+                            if(syntaxIsCorrect(msg)){
+                                try{
+                                    Double result = processOperation(msg);
+                                    out.write("RESULT " + result);
+                                }catch(RuntimeException e){
+                                    out.write("ERROR DEFINITION_DOMAIN " + e.getMessage());
+                                }
+                            }
+                        } catch (RuntimeException re) {
+                            try {
+                                out.write("ERROR SYNTAX " + re.getMessage());;
+                            }catch (IOException ioe) {
+                                ioe.printStackTrace();
+                            }
                         }
-                    }else{
-                        Double result = processOperation(msg);
-                        out.write("RESULT " + result);
-                    }
 
                     out.flush();
                 }
@@ -73,7 +80,8 @@ public class ServerWorker implements Runnable {
             }
         }
     }
-    private Boolean syntaxIsCorrect(String msg) throws RuntimeException{
+
+    boolean syntaxIsCorrect(String msg) throws RuntimeException{
         int     nbOpenParenthesis = 0,
                 nbClosedParenthesis = 0,
                 nbOperands = 0,
@@ -99,7 +107,7 @@ public class ServerWorker implements Runnable {
                 } else if (c == CLOSE_PARENTHESIS) {
                     nbClosedParenthesis++;
                 }else{
-                    return false;
+                    throw new RuntimeException("Invalid character");
                 }
 
             }else{
@@ -107,10 +115,10 @@ public class ServerWorker implements Runnable {
             }
         }
         if(nbClosedParenthesis != nbOpenParenthesis){
-            return false;
+            throw new RuntimeException("Parenthesis mismatch");
         }
         if(nbOperator == 0 || nbOperands == 0 || nbOperator != (nbOperands - 1)){
-            return false;
+            throw new RuntimeException("Operand or operator missing");
         }
         return true;
     }
@@ -147,7 +155,7 @@ public class ServerWorker implements Runnable {
                         v = valStack.pop() * v;
                     } else if (op == DIVIDE) {
                         if(v == 0)
-                            throw new RuntimeException("ERROR DEFINITION_DOMAIN\n");
+                            throw new RuntimeException("Divide by zero\n");
                         v = valStack.pop() / v;
                     }
                     valStack.push(v);
