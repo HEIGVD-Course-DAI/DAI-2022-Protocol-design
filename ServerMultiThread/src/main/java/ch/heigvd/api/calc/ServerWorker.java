@@ -16,6 +16,12 @@ public class ServerWorker implements Runnable {
     private Socket clientSocket;
     private BufferedReader in = null;
     private BufferedWriter out = null;
+    private final char OPEN_PARENTHESIS = '(',
+            CLOSE_PARENTHESIS = ')',
+            MULTIPLY = '*',
+            DIVIDE = '/',
+            ADD = '+',
+            SUBSTRACT = '-';
 
     /**
      * Instantiation of a new worker mapped to a socket
@@ -48,16 +54,17 @@ public class ServerWorker implements Runnable {
                     out.close();
                 } else if(msg.startsWith("COMPUTE")) {
                     msg = msg.substring(7);
-                    try{
+                    if(!syntaxIsCorrect(msg)) {
+                        try {
+                            out.write("ERROR SYNTAX");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }else{
                         Double result = processOperation(msg);
-                        if (result.isNaN())
-                            out.write("ERROR SYNTAX\n");
-                        else
-                            out.write("OK RESULT " + result + "\n");
+                        out.write("RESULT " + result);
                     }
-                    catch(RuntimeException e){
-                        out.write(e.getMessage());
-                    }
+
                     out.flush();
                 }
 
@@ -66,47 +73,90 @@ public class ServerWorker implements Runnable {
             }
         }
     }
+    private Boolean syntaxIsCorrect(String msg) throws RuntimeException{
+        int     nbOpenParenthesis = 0,
+                nbClosedParenthesis = 0,
+                nbOperands = 0,
+                nbOperator =0;
 
+        StringBuilder stringNumber = new StringBuilder();
+        for(int i = 0; i < msg.length(); ++i){
+            char c = msg.charAt(i);
+            if(c == ' ' || c =='\n'){
+                continue;
+            }
+            if(!Character.isDigit(c)){
+                //NotANumber
+                if(!stringNumber.toString().equals("")){
+                    nbOperands++;
+                    stringNumber = new StringBuilder();
+                }
+
+                if(c == MULTIPLY || c == DIVIDE || c == ADD || c == SUBSTRACT){
+                    nbOperator++;
+                }else if(c == OPEN_PARENTHESIS){
+                    nbOpenParenthesis++;
+                } else if (c == CLOSE_PARENTHESIS) {
+                    nbClosedParenthesis++;
+                }else{
+                    return false;
+                }
+
+            }else{
+                stringNumber.append(c);
+            }
+        }
+        System.out.println("NB Parenthesis " + nbOpenParenthesis + " / " + nbClosedParenthesis);
+        System.out.println("Nb Operator " + nbOperator + " Nb operand " + nbOperands);
+        if(nbClosedParenthesis != nbOpenParenthesis){
+            return false;
+        }
+        if(nbOperator == 0 || nbOperands == 0 || nbOperator != (nbOperands - 1)){
+            return false;
+        }
+        return true;
+    }
     private Double processOperation(String msg)throws RuntimeException {
         Stack<Double> valStack = new Stack<>();
         Stack<Character> opStack = new Stack<>();
+        StringBuilder number = new StringBuilder();
 
         for (int i = 0; i < msg.length(); ++i) {
+
             char c = msg.charAt(i);
-            if (c == ' ' || c == '(') {
-                //Do nothing
-            } else if (Character.isDigit(c)) {
+            if (c == ' ' || c == OPEN_PARENTHESIS) {
+                continue;
+            }
+            if (Character.isDigit(c)) {
                 // Concat all next digital char to compose a number
-                int nextCharIndex = 0;
-                StringBuilder s = new StringBuilder();
-                while (Character.isDigit(msg.charAt(i + nextCharIndex))) {
-                    s.append(msg.charAt(i + nextCharIndex));
-                    nextCharIndex++;
-                }
-                //Increment the main index
-                i += nextCharIndex - 1;
+                number.append(c);
+            }
+            else{
                 // Push the number in the value stack
-                valStack.push(Double.parseDouble(s.toString()));
-                //Delete the temporary formed string
-                s.delete(0, s.length());
-            } else if (c == ')') {
-                double v = valStack.pop();
-                char op = opStack.pop();
-                if (op == '+') {
-                    v = valStack.pop() + v;
-                } else if (op == '-') {
-                    v = valStack.pop() - v;
-                } else if (op == '*') {
-                    v = valStack.pop() * v;
-                } else if (op == '/') {
-                    if(v == 0)
-                        throw new RuntimeException("ERROR DEFINITION_DOMAIN\n");
-                    v = valStack.pop() / v;
+                if(!number.toString().equals("")){
+                    valStack.push(Double.parseDouble(number.toString()));
+                    number = new StringBuilder();
                 }
-                valStack.push(v);
-            } else if (c == '+' || c == '-' || c == '*' || c == '/') {
-                opStack.push(c);
-            } else return Double.NaN;
+
+                if (c == CLOSE_PARENTHESIS) {
+                    double v = valStack.pop();
+                    char op = opStack.pop();
+                    if (op == ADD) {
+                        v = valStack.pop() + v;
+                    } else if (op == SUBSTRACT) {
+                        v = valStack.pop() - v;
+                    } else if (op == MULTIPLY) {
+                        v = valStack.pop() * v;
+                    } else if (op == DIVIDE) {
+                        if(v == 0)
+                            throw new RuntimeException("ERROR DEFINITION_DOMAIN\n");
+                        v = valStack.pop() / v;
+                    }
+                    valStack.push(v);
+                } else if (c == ADD || c == SUBSTRACT || c == MULTIPLY || c == DIVIDE) {
+                    opStack.push(c);
+                }
+            }
         }
         return valStack.pop();
     }
