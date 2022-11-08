@@ -2,6 +2,7 @@ package ch.heigvd.api.calc;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,8 +24,6 @@ public class Client {
         // Log output on a single line
         System.setProperty("java.util.logging.SimpleFormatter.format", "%4$s: %5$s%6$s%n");
         BufferedReader stdin = null;
-        OutputStream os = null;
-        InputStream is = null;
 
         /* TODO: Implement the client here, according to your specification
          *   The client has to do the following:
@@ -38,13 +37,24 @@ public class Client {
 
         Socket clientSocket = new Socket(HOST, PORT_NUMBER);
 
-        String chat = "Les chats gouvereront le monde !";
-        os = clientSocket.getOutputStream();
-        is = clientSocket.getInputStream();
-        os.write(chat.getBytes());
-        os.flush();
 
-        //stdin = new BufferedReader(new InputStreamReader(System.in));
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream(), StandardCharsets.UTF_8));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), StandardCharsets.UTF_8));
+        stdin = new BufferedReader(new InputStreamReader(System.in));
+
+        String send;
+        do {
+            System.out.println(reader.readLine());
+            send = stdin.readLine();
+            if (!send.equals("QUIT")) {
+                send = "CALCUL " + send;
+            }
+            writer.write(send + "\n");
+            writer.flush();
+        }while (!send.equals("QUIT"));
+
+        writer.close();
+        reader.close();
         clientSocket.close();
     }
 }
