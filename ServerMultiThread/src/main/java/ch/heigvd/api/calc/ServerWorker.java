@@ -2,9 +2,7 @@ package ch.heigvd.api.calc;
 
 import java.io.*;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.util.Stack;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -47,31 +45,13 @@ public class ServerWorker implements Runnable {
                 System.out.println(msg);
 
                 if (msg.startsWith("CLOSE")) {
-                    out.write("Closing connexion. Goodbye Jarod!\n");
+                    out.write("Closing connexion.\n");
                     out.flush();
                     clientSocket.close();
                     in.close();
                     out.close();
-                } else if(msg.startsWith("COMPUTE")) {
-                    msg = msg.substring(7);
-
-                        try {
-                            if(syntaxIsCorrect(msg)){
-                                try{
-                                    Double result = processOperation(msg);
-                                    out.write("OK RESULT " + result);
-                                }catch(RuntimeException e){
-                                    out.write("ERROR DEFINITION_DOMAIN " + e.getMessage());
-                                }
-                            }
-                        } catch (RuntimeException re) {
-                            try {
-                                out.write("ERROR SYNTAX " + re.getMessage());;
-                            }catch (IOException ioe) {
-                                ioe.printStackTrace();
-                            }
-                        }
-
+                } else {
+                    out.write(processCommand(msg).concat("\n"));
                     out.flush();
                 }
 
@@ -81,48 +61,67 @@ public class ServerWorker implements Runnable {
         }
     }
 
-    boolean syntaxIsCorrect(String msg) throws RuntimeException{
-        int     nbOpenParenthesis = 0,
-                nbClosedParenthesis = 0,
-                nbOperands = 0,
-                nbOperator =0;
+    String processCommand(String msg) {
+        if (msg.startsWith("COMPUTE")) {
+            msg = msg.substring(7);
+            try {
+                checkSyntax(msg);
+                try {
+                    Double result = processOperation(msg);
+                    return "OK RESULT " + result;
+                } catch (RuntimeException e) {
+                    return "ERROR DEFINITION_DOMAIN " + e.getMessage();
+                }
+
+            } catch (RuntimeException re) {
+                return "ERROR SYNTAX " + re.getMessage();
+            }
+        } else
+            return "ERROR INVALID COMMAND";
+    }
+
+    void checkSyntax(String msg) throws RuntimeException {
+        int nbOpenPar = 0, nbClosedPar = 0, nbOperands = 0, nbOperator = 0;
 
         StringBuilder stringNumber = new StringBuilder();
-        for(int i = 0; i < msg.length(); ++i){
+        for (int i = 0; i < msg.length(); ++i) {
             char c = msg.charAt(i);
-            if(c == ' ' || c =='\n'){
+            if (c == ' ' || c == '\n') {
                 continue;
             }
-            if(!Character.isDigit(c)){
+            if (!Character.isDigit(c)) {
                 //NotANumber
-                if(!stringNumber.toString().equals("")){
+                if (!stringNumber.toString().equals("")) {
                     nbOperands++;
                     stringNumber = new StringBuilder();
                 }
 
-                if(c == MULTIPLY || c == DIVIDE || c == ADD || c == SUBSTRACT){
+                if (c == MULTIPLY || c == DIVIDE || c == ADD || c == SUBSTRACT)
                     nbOperator++;
-                }else if(c == OPEN_PARENTHESIS){
-                    nbOpenParenthesis++;
-                } else if (c == CLOSE_PARENTHESIS) {
-                    nbClosedParenthesis++;
-                }else{
-                    throw new RuntimeException("Invalid character");
-                }
 
-            }else{
+                else if (c == OPEN_PARENTHESIS)
+                    nbOpenPar++;
+
+                else if (c == CLOSE_PARENTHESIS)
+                    nbClosedPar++;
+
+                else
+                    throw new RuntimeException("Invalid character");
+            } else {
                 stringNumber.append(c);
             }
         }
-        if(nbClosedParenthesis != nbOpenParenthesis){
+        if (nbClosedPar != nbOpenPar)
             throw new RuntimeException("Parenthesis mismatch");
-        }
-        if(nbOperator == 0 || nbOperands == 0 || nbOperator != (nbOperands - 1)){
+
+        if(nbOpenPar != nbOperator && nbOperator != 0)
+            throw new RuntimeException("Missing parenthesis");
+
+        if (nbOperator == 0 || nbOperands == 0 || nbOperator != (nbOperands-1))
             throw new RuntimeException("Operand or operator missing");
-        }
-        return true;
     }
-    private Double processOperation(String msg)throws RuntimeException {
+
+    private Double processOperation(String msg) throws RuntimeException {
         Stack<Double> valStack = new Stack<>();
         Stack<Character> opStack = new Stack<>();
         StringBuilder number = new StringBuilder();
@@ -136,10 +135,9 @@ public class ServerWorker implements Runnable {
             if (Character.isDigit(c)) {
                 // Concat all next digital char to compose a number
                 number.append(c);
-            }
-            else{
+            } else {
                 // Push the number in the value stack
-                if(!number.toString().equals("")){
+                if (!number.toString().equals("")) {
                     valStack.push(Double.parseDouble(number.toString()));
                     number = new StringBuilder();
                 }
@@ -154,8 +152,8 @@ public class ServerWorker implements Runnable {
                     } else if (op == MULTIPLY) {
                         v = valStack.pop() * v;
                     } else if (op == DIVIDE) {
-                        if(v == 0)
-                            throw new RuntimeException("Divide by zero\n");
+                        if (v == 0)
+                            throw new RuntimeException("Divide by zero");
                         v = valStack.pop() / v;
                     }
                     valStack.push(v);
