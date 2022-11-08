@@ -37,15 +37,20 @@ public class ServerWorker implements Runnable {
      */
     @Override
     public void run() {
-        while (!clientSocket.isClosed()) {
-            try {
-                in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
+        try {
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
+            out.write("Connected to our awesome calc server!\n");
+            out.write("Commands:\n");
+            out.write("COMPUTE Computes the given calculus\n");
+            out.write("examples: COMPUTE(x+y) COMPUTE(x-(y*(z+w)))\n");
+            out.write("CLOSE Closes the connexion\n");
+            out.flush();
+            while (!clientSocket.isClosed()) {
                 String msg = in.readLine();
                 System.out.println(msg);
-
                 if (msg.startsWith("CLOSE")) {
-                    out.write("OK Closing connexion.\n");
+                    out.write("OK CLOSE\n");
                     out.flush();
                     clientSocket.close();
                     in.close();
@@ -54,11 +59,11 @@ public class ServerWorker implements Runnable {
                     out.write(processCommand(msg).concat("\n"));
                     out.flush();
                 }
-
-            } catch (IOException e) {
-                throw new RuntimeException(e);
             }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+
     }
 
     String processCommand(String msg) {
@@ -114,10 +119,10 @@ public class ServerWorker implements Runnable {
         if (nbClosedPar != nbOpenPar)
             throw new RuntimeException("Parenthesis mismatch");
 
-        if(nbOpenPar != nbOperator && nbOperator != 0)
+        if (nbOpenPar != nbOperator && nbOperator != 0)
             throw new RuntimeException("Missing parenthesis");
 
-        if (nbOperator == 0 || nbOperands == 0 || nbOperator != (nbOperands-1))
+        if (nbOperator == 0 || nbOperands == 0 || nbOperator != (nbOperands - 1))
             throw new RuntimeException("Operand or operator missing");
     }
 

@@ -21,25 +21,36 @@ public class Client {
     public static void main(String[] args) {
         Client client = new Client();
         BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
-        if (client.connect("localhost", 2022)) {
-            while (client.isConnected()) {
-                try {
-                    System.out.println(client.write(stdin.readLine()));
-                } catch (IOException ioe) {
-                    System.err.println("Error reading the input");
-                } catch (RuntimeException re) {
-                    System.err.println(re.getMessage());
-                    break;
+        String response;
+        try {
+            if (client.connect("localhost", 2022)) {
+                System.out.println(client.read());
+                while (client.isConnected()) {
+                    //Write request
+                    client.write(stdin.readLine());
+
+                    //Read response
+                    response = client.read();
+                    if(response.contains("OK CLOSE")){
+                        System.out.println("Connexion closed.");
+                        break;
+                    }
+                    System.out.println(response);
                 }
             }
+        } catch (IOException ioe) {
+            System.err.println("Error reading the input");
+        } catch (RuntimeException re) {
+            System.err.println(re.getMessage());
         }
     }
 
     /**
-     * Connecxion status to the server
-     * @return
+     * Connexion status to the server
+     *
+     * @return if the client is not closed
      */
-    public boolean isConnected(){
+    public boolean isConnected() {
         return !socket.isClosed();
     }
 
@@ -47,9 +58,8 @@ public class Client {
      * Writes the request and waits for the response
      *
      * @param request the request to write
-     * @return The server response
      */
-    public String write(String request) {
+    public void write(String request) {
         try {
             //Don't forget the endline, otherwise the server won't read the request
             os.write(request.concat("\n"));
@@ -57,11 +67,16 @@ public class Client {
         } catch (IOException ioe_os) {
             throw new RuntimeException("An I/O error occurred writing the request");
         }
+    }
+
+    public String read() throws IOException {
         try {
-            //Read the response
-            return is.readLine();
+            StringBuilder response = new StringBuilder();
+            while(is.ready())
+                response.append(is.readLine().concat("\n"));
+            return response.toString();
         } catch (IOException ioe_is) {
-            throw new RuntimeException("An I/O error occurred reading the response");
+            throw new IOException("An I/O error occurred reading the response");
         }
     }
 
@@ -70,7 +85,7 @@ public class Client {
      *
      * @param host The host address
      * @param port The host port
-     * @return Wether the connection has been established or not
+     * @return Weather the connection has been established or not
      */
     boolean connect(String host, int port) {
         try {
