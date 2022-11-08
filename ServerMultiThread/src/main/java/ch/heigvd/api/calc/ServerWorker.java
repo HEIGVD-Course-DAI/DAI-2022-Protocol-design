@@ -37,7 +37,7 @@ public class ServerWorker implements Runnable {
     @Override
     public void run()  {
         final String ERROR_MSG = "ERREUR entree non valide\n";
-        final String regexCalcul = "^CALCUL ([+-]?)(\\d+(\\.\\d)?) ([+*\\-]) ([+-]?)(\\d+(\\.\\d)?)$";
+        final String regexCalcul = "^CALCUL ([+-]?)(\\d+(\\.\\d*)?) ([+*\\-]) ([+-]?)([\\d]+(\\.\\d*)?)$";
         Pattern patternCalcul = Pattern.compile(regexCalcul);
 
         try {

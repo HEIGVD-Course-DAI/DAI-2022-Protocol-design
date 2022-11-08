@@ -54,7 +54,7 @@ public class Server {
 
         final String ERROR_MSG = "ERREUR entree non valide\n";
         //  (\d+\.?\d*) ([+\-*/]) (\d+\.?\d*)
-        final String regexCalcul = "^CALCUL ([+-]?)(\\d+(\\.\\d)?) ([+*\\-]) ([+-]?)(\\d+(\\.\\d)?)$";
+        final String regexCalcul = "^CALCUL ([+-]?)(\\d+(\\.\\d*)?) ([+*\\-]) ([+-]?)([\\d]+(\\.\\d*)?)$";
         Pattern patternCalcul = Pattern.compile(regexCalcul);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
