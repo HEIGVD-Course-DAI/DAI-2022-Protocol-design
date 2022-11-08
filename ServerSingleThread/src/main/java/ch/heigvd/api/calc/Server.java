@@ -3,6 +3,7 @@ package ch.heigvd.api.calc;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.text.DecimalFormat;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,13 +31,6 @@ public class Server {
     private void start() throws IOException {
         final int PORT_NUMBER = 4000;
 
-
-
-        /* TODO: implement the receptionist server here.
-         *  The receptionist just creates a server socket and accepts new client connections.
-         *  For a new client connection, the actual work is done by the handleClient method below.
-         */
-
         // Create the server socket
         ServerSocket serverSocket = null;
         serverSocket = new ServerSocket(PORT_NUMBER);
@@ -58,30 +52,31 @@ public class Server {
      */
     private void handleClient(Socket clientSocket) throws IOException {
 
-        final String ERROR_MSG = "ERREUR wrong input\n";
+        final String ERROR_MSG = "ERREUR entree non valide\n";
         //  (\d+\.?\d*) ([+\-*/]) (\d+\.?\d*)
-        final String regexCalcul = "^CALCUL (\\d+(.\\d)?) ([+*/\\-]) ([\\d]+(.[\\d])?)$";
+        final String regexCalcul = "^CALCUL ([+-]?)(\\d+(.\\d)?) ([+*\\-]) ([+-]?)([\\d]+(.[\\d])?)$";
         Pattern patternCalcul = Pattern.compile(regexCalcul);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
         String line;
-        out.write("BONJOUR listes des operations disponibles : + - * / \n" );
+        out.write("BONJOUR, ceci est une calculatrice supportant les operations + - * /,  veuillez ajouter un espace entre les operandes, ex : 5 + 4\n" );
         out.flush();
         LOG.info("Reading until client sends QUIT");
         while (!(clientSocket.isClosed())) {
             line = in.readLine();
             if (line.equals("QUIT")) {
+                LOG.info("Closing connection");
                 break;
             }
 
             Matcher matcherCalcul = patternCalcul.matcher(line);
             if (matcherCalcul.find()) {
 
-                float operand1 = Float.parseFloat(matcherCalcul.group(1));
-                float operand2 = Float.parseFloat(matcherCalcul.group(4));
+                float operand1 = Float.parseFloat(matcherCalcul.group(2));
+                float operand2 = Float.parseFloat(matcherCalcul.group(6));
                 float result = 0;
-                switch (matcherCalcul.group(3).charAt(0)) {
+                switch (matcherCalcul.group(4).charAt(0)) {
                     case '+':
                         result = operand1 + operand2;
                         break;
@@ -99,7 +94,8 @@ public class Server {
                 }
 
                 out.flush();
-                out.write("RESULT " + result + '\n');
+                DecimalFormat f = new DecimalFormat("##.00");
+                out.write("RESULT " + f.format(result) + '\n');
                 out.flush();
             } else {
                 out.write(ERROR_MSG);
@@ -108,15 +104,5 @@ public class Server {
         }
         in.close();
         out.close();
-        /* TODO: implement the handling of a client connection according to the specification.
-         *   The server has to do the following:
-         *   - initialize the dialog according to the specification (for example send the list
-         *     of possible commands)
-         *   - In a loop:
-         *     - Read a message from the input stream (using BufferedReader.readLine)
-         *     - Handle the message
-         *     - Send to result to the client
-         */
-
     }
 }
