@@ -45,7 +45,7 @@ public class ServerWorker implements Runnable {
                 System.out.println(msg);
 
                 if (msg.startsWith("CLOSE")) {
-                    out.write("Closing connexion.\n");
+                    out.write("OK Closing connexion.\n");
                     out.flush();
                     clientSocket.close();
                     in.close();
