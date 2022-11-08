@@ -36,22 +36,26 @@ public class Client {
          */
 
         Socket clientSocket = new Socket(HOST, PORT_NUMBER);
-
+        System.out.println("Connection établie, suivez les opérations proposées par le serveur");
+        System.out.println("Ecrivez \"QUIT\" pour fermer la connexion");
 
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream(), StandardCharsets.UTF_8));
         BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), StandardCharsets.UTF_8));
         stdin = new BufferedReader(new InputStreamReader(System.in));
 
-        String send;
-        do {
+        String send = "";
+        while (!send.equals("QUIT")){
             System.out.println(reader.readLine());
             send = stdin.readLine();
+
             if (!send.equals("QUIT")) {
-                send = "CALCUL " + send;
+                send = "CALCUL " + send;;
             }
             writer.write(send + "\n");
             writer.flush();
-        }while (!send.equals("QUIT"));
+        };
+
+        System.out.println("Connexion fermée");
 
         writer.close();
         reader.close();
