@@ -18,12 +18,18 @@ public class Client {
      *
      * @param args no args required
      */
-    public static void main(String[] args) throws IOException{
+    public static void main(String[] args) {
+
+        // Login Information
         final int PORT_NUMBER = 4000;
         final String HOST = "localhost";
+
         // Log output on a single line
         System.setProperty("java.util.logging.SimpleFormatter.format", "%4$s: %5$s%6$s%n");
         BufferedReader stdin = null;
+        Socket clientSocket = null;
+        BufferedWriter writer = null;
+        BufferedReader reader = null;
 
         /* TODO: Implement the client here, according to your specification
          *   The client has to do the following:
@@ -35,30 +41,50 @@ public class Client {
          *     - read the response line from the server (using BufferedReader.readLine)
          */
 
-        Socket clientSocket = new Socket(HOST, PORT_NUMBER);
-        System.out.println("Connection établie, suivez les opérations proposées par le serveur");
-        System.out.println("Ecrivez \"QUIT\" pour fermer la connexion");
+        try {
+            clientSocket = new Socket(HOST, PORT_NUMBER);
+            System.out.println("Connection établie, suivez les opérations proposées par le serveur");
+            System.out.println("Ecrivez \"QUIT\" pour fermer la connexion, informations du serveur :");
 
-        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream(), StandardCharsets.UTF_8));
-        BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), StandardCharsets.UTF_8));
-        stdin = new BufferedReader(new InputStreamReader(System.in));
+            // Buffer to receive and send information to the server
+            writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream(), StandardCharsets.UTF_8));
+            reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), StandardCharsets.UTF_8));
+            stdin = new BufferedReader(new InputStreamReader(System.in));
 
-        String send = "";
-        while (!send.equals("QUIT")){
-            System.out.println(reader.readLine());
-            send = stdin.readLine();
+            String send = "";
+            while (!send.equals("QUIT")){
+                System.out.println(reader.readLine());
+                send = stdin.readLine();
 
-            if (!send.equals("QUIT")) {
-                send = "CALCUL " + send;;
+                if (!send.equals("QUIT")) {
+                    send = "CALCUL " + send;;
+                }
+                // Send to server
+                writer.write(send + "\n");
+                writer.flush();
+            };
+
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, ex.getMessage());
+        } finally {
+            // Use DumbHttpClient.java as exemple
+            try {
+                if(writer != null) writer.close();
+            } catch (IOException ex) {
+                LOG.log(Level.SEVERE, ex.getMessage());
             }
-            writer.write(send + "\n");
-            writer.flush();
-        };
+            try {
+                if(reader != null) reader.close();
+            } catch (IOException ex) {
+                LOG.log(Level.SEVERE, ex.getMessage());
+            }
+            try {
+                if(clientSocket != null) clientSocket.close();
+                System.out.println("Connexion fermée");
+            } catch (IOException ex) {
+                LOG.log(Level.SEVERE, ex.getMessage());
 
-        System.out.println("Connexion fermée");
-
-        writer.close();
-        reader.close();
-        clientSocket.close();
+            }
+        }
     }
 }
