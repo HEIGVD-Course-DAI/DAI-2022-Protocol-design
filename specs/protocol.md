@@ -5,7 +5,7 @@ Overall behavior:
 
 What transport protocol do we use?
 
-    TCP
+    TCP, port : 4000
 How does the client find the server (addresses and ports)?
 
     arbitrary values
@@ -29,7 +29,7 @@ information sent by the server containing the operation available
 information sent by client containing operation to do
 
     CALCUL <OPERAND> <OPERATOR> <OPERAND>
-information sent by server containing the result of the CALCUL
+information sent by server containing the result in decimal of the CALCUL
 
     RESULTAT <RESULT>
 
@@ -47,11 +47,4 @@ What is the sequence of messages exchanged by the client and the server? (flow)
 - RESULTAT (serveur)
 - QUIT (client)
 
-What happens when a message is received from the other party? (semantics)
-    
-Specific elements (if useful)
 
-Supported operations
-Error handling
-Extensibility
-Examples: examples of some typical dialogs.
