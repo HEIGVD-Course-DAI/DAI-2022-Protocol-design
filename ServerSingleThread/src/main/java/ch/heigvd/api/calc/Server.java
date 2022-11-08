@@ -54,13 +54,14 @@ public class Server {
 
         final String ERROR_MSG = "ERREUR entree non valide\n";
         //  (\d+\.?\d*) ([+\-*/]) (\d+\.?\d*)
-        final String regexCalcul = "^CALCUL ([+-]?)(\\d+(.\\d)?) ([+*\\-]) ([+-]?)([\\d]+(.[\\d])?)$";
+        final String regexCalcul = "^CALCUL ([+-]?)(\\d+(\\.\\d)?) ([+*\\-]) ([+-]?)(\\d+(\\.\\d)?)$";
         Pattern patternCalcul = Pattern.compile(regexCalcul);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
         String line;
-        out.write("BONJOUR, ceci est une calculatrice supportant les operations + - * /,  veuillez ajouter un espace entre les operandes, ex : 5 + 4\n" );
+        out.write("BONJOUR, ceci est une calculatrice supportant les operations + - * /,  veuillez ajouter un espace entre les operandes, ex : 5 + 4. " +
+                "Veuillez utiliser des points et non des virgules pour les valeurs decimales, ex 3.2 et non 3,2\n" );
         out.flush();
         LOG.info("Reading until client sends QUIT");
         while (!(clientSocket.isClosed())) {
@@ -73,8 +74,8 @@ public class Server {
             Matcher matcherCalcul = patternCalcul.matcher(line);
             if (matcherCalcul.find()) {
 
-                float operand1 = Float.parseFloat(matcherCalcul.group(2));
-                float operand2 = Float.parseFloat(matcherCalcul.group(6));
+                float operand1 = Float.parseFloat(matcherCalcul.group(1) + matcherCalcul.group(2));
+                float operand2 = Float.parseFloat(matcherCalcul.group(5) + matcherCalcul.group(6));
                 float result = 0;
                 switch (matcherCalcul.group(4).charAt(0)) {
                     case '+':

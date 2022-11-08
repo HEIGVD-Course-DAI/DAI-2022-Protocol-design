@@ -37,14 +37,15 @@ public class ServerWorker implements Runnable {
     @Override
     public void run()  {
         final String ERROR_MSG = "ERREUR entree non valide\n";
-        final String regexCalcul = "^CALCUL ([+-]?)(\\d+(.\\d)?) ([+*\\-]) ([+-]?)([\\d]+(.[\\d])?)$";
+        final String regexCalcul = "^CALCUL ([+-]?)(\\d+(\\.\\d)?) ([+*\\-]) ([+-]?)(\\d+(\\.\\d)?)$";
         Pattern patternCalcul = Pattern.compile(regexCalcul);
 
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
             String line;
-            out.write("BONJOUR, ceci est une calculatrice supportant les operations + - * /,  veuillez ajouter un espace entre les operandes, ex : 5 + 4\n" );
+            out.write("BONJOUR, ceci est une calculatrice supportant les operations + - * /,  veuillez ajouter un espace entre les operandes, ex : 5 + 4. " +
+                    "Veuillez utiliser des points et non des virgules pour les valeurs decimales, ex 3.2 et non 3,2\n" );
             out.flush();
             LOG.info("Reading until client sends QUIT");
             while (!(clientSocket.isClosed())) {
