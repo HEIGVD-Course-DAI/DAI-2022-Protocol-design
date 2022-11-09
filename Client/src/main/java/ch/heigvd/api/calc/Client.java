@@ -22,7 +22,7 @@ public class Client {
         // Log output on a single line
         System.setProperty("java.util.logging.SimpleFormatter.format", "%4$s: %5$s%6$s%n");
 
-        BufferedReader stdin = null;
+        BufferedReader stdin;
 
         /* TODO: Implement the client here, according to your specification
          *   The client has to do the following:
@@ -34,30 +34,37 @@ public class Client {
          *     - read the response line from the server (using BufferedReader.readLine)
          */
 
-        BufferedReader is = null;
-        BufferedWriter os = null;
-        Socket clientSocket = null;
+        BufferedReader is;
+        BufferedWriter os;
+        Socket clientSocket;
 
         try {
             clientSocket = new Socket("10.191.4.112", 7777);
             is = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), StandardCharsets.UTF_8));
             os = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream(), StandardCharsets.UTF_8));
-            String cal = "2+2" + "\n";
-            os.write(cal);
-            os.flush();
-            System.out.println("message send");
+            stdin = new BufferedReader(new InputStreamReader(System.in));
 
-            String line = is.readLine();
-            System.out.println(line);
+            String open = "open" + "\n";
+            os.write(open);
+            os.flush();
+
+            String serverResponse = is.readLine();
+            System.out.println(serverResponse);
+
+            if(!serverResponse.equals("connection ok")){throw new RuntimeException("connection failed");}
+
+            String client;
+            do{
+                client = stdin.readLine();
+                os.write(client);
+                os.flush();
+                serverResponse = is.readLine();
+                System.out.println(serverResponse);
+
+            }while(client.equals("close"));
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        stdin = new BufferedReader(new InputStreamReader(System.in));
-
-
-
-
     }
 }
