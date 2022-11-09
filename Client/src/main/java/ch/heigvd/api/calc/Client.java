@@ -72,7 +72,7 @@ public class Client {
     public String read() throws IOException {
         try {
             StringBuilder response = new StringBuilder();
-            while(is.ready())
+            while(is.ready() && response.length() == 0)
                 response.append(is.readLine().concat("\n"));
             return response.toString();
         } catch (IOException ioe_is) {
