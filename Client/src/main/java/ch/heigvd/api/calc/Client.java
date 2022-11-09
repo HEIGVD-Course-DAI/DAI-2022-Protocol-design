@@ -3,6 +3,7 @@ package ch.heigvd.api.calc;
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -44,7 +45,7 @@ public class Client {
             os = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream(), StandardCharsets.UTF_8));
             stdin = new BufferedReader(new InputStreamReader(System.in));
 
-            String open = "open" + "\n";
+            String open = "open\n";
             os.write(open);
             os.flush();
 
@@ -54,14 +55,16 @@ public class Client {
             if(!serverResponse.equals("connection ok")){throw new RuntimeException("connection failed");}
 
             String client;
+            System.out.println("Bonjour :");
             do{
                 client = stdin.readLine();
-                os.write(client);
+                os.write(client + "\n");
                 os.flush();
-                serverResponse = is.readLine();
-                System.out.println(serverResponse);
-
-            }while(client.equals("close"));
+                if(!Objects.equals(client, "close")){
+                    serverResponse = is.readLine();
+                    System.out.println(serverResponse);
+                }
+            }while(!client.equals("close"));
 
         } catch (IOException e) {
             throw new RuntimeException(e);
