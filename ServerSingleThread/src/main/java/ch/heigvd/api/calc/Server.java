@@ -81,7 +81,7 @@ public class Server {
             if (Objects.equals(line, "close")) {
                 break;
             }else if (Objects.equals(line, "open")) {
-                writer.write(("connection ok"));
+                writer.write(("connection ok\n"));
             }else if(Objects.equals(line, "help")){
                 writer.write("Bonjour, entrez votre calcul, les opérations supporée sont + - * / ex. |3 * 4 + 5|, " +
                         "mon développeur étant paresseux les paranthèse ne sont pas traitée ni la priorité des opérations\n");
