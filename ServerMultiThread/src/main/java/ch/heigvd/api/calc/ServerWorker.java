@@ -50,7 +50,7 @@ public class ServerWorker implements Runnable {
                 String msg = in.readLine();
                 System.out.println(msg);
                 if (msg.startsWith("CLOSE")) {
-                    out.write("OK CLOSE\n");
+                    out.write("OK INFO Connexion closed\n");
                     out.flush();
                     clientSocket.close();
                     in.close();
@@ -82,7 +82,7 @@ public class ServerWorker implements Runnable {
                 return "ERROR SYNTAX " + re.getMessage();
             }
         } else
-            return "ERROR INVALID COMMAND";
+            return "ERROR INVALID_COMMAND";
     }
 
     void checkSyntax(String msg) throws RuntimeException {
