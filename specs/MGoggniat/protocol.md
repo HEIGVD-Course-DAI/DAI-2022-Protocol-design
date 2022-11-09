@@ -24,8 +24,9 @@
 ## Messages:
 ### What is the syntax of the messages?
 
-    Gestion de paranthèse pour les priorités
-    Utilisation d'un . pour les nombres à virgule
+    "nombre op nombre op ...."
+    sans paranthèse
+    nombre entier uniquement
 
 ### What is the sequence of messages exchanged by the client and the server? (flow)
 
@@ -37,19 +38,19 @@
     serveur :
     "connection ok"
     "*résultat*"
-    "error in pattern"
+    "format incorrect"
 
 ### What happens when a message is received from the other party? (semantics)
 
     client :
-    "open" -> ouvre connecxion
+    "open" -> indique au serveur que la connexion est correcte
     "*calcul*" -> retourne résulats ou erreur
     "close" -> ferme connexion
 
     serveur :
     "connection ok" permet les calculs
     "*résultat*" rien
-    "error" rien
+    "format incorrect" rien
 
 ### Specific elements (if useful)
 ### Supported operations
@@ -59,7 +60,8 @@
 
 ### Extensibility
     ajout d'opérations
-    calcul avec plus que 2 nombres
+    priorité des opérations
+    paranthèses
 
 ## Examples: examples of some typical dialogs.
 
