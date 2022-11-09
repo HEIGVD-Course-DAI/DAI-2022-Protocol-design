@@ -31,7 +31,7 @@ public class Client {
 
                     //Read response
                     response = client.read();
-                    if(response.contains("OK CLOSE")){
+                    if(response.contains("OK INFO CONNECTION_CLOSED")){
                         System.out.println("Connexion closed.");
                         break;
                     }

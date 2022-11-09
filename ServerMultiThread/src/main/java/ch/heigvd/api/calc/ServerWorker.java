@@ -50,7 +50,7 @@ public class ServerWorker implements Runnable {
                 String msg = in.readLine();
                 System.out.println(msg);
                 if (msg.startsWith("CLOSE")) {
-                    out.write("OK INFO Connexion closed\n");
+                    out.write("OK INFO CONNECTION_CLOSED\n");
                     out.flush();
                     clientSocket.close();
                     in.close();
