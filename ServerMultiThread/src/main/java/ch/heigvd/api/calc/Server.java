@@ -1,3 +1,5 @@
+// Co-author : Yann Merk
+// NOT TESTED, SEE SINGLE THREADED INSTEAD
 package ch.heigvd.api.calc;
 
 import java.io.IOException;

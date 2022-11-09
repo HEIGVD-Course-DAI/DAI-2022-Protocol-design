@@ -1,3 +1,6 @@
+// Co-author : Yann Merk
+// Prefer this one over the multithreaded
+
 package ch.heigvd.api.calc;
 
 import java.io.*;
