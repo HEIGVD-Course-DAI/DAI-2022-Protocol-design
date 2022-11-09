@@ -77,9 +77,12 @@ public class Server {
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream(), "UTF-8"));
 
         String line = reader.readLine();
-        while(!Objects.equals(line, "close")) {
-            System.out.println("message recu |" + line + "|");
-            if(Objects.equals(line, "hello") || Objects.equals(line, "help")){
+        while(true) {
+            if (Objects.equals(line, "close")) {
+                break;
+            }else if (Objects.equals(line, "open")) {
+                writer.write(("connection ok"));
+            }else if(Objects.equals(line, "help")){
                 writer.write("Bonjour, entrez votre calcul, les opérations supporée sont + - * / ex. |3 * 4 + 5|, " +
                         "mon développeur étant paresseux les paranthèse ne sont pas traitée ni la priorité des opérations\n");
             }else{
