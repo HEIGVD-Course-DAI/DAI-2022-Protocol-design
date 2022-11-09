@@ -37,8 +37,6 @@ public class Client {
 
         stdin = new BufferedReader(new InputStreamReader(System.in));
 
-        //Scanner sc = new Scanner(System.in);
-
 
         final int PORT = 4433;
         final String address = "localhost";
@@ -52,12 +50,6 @@ public class Client {
             out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));;
             val = stdin.readLine();
-            /* bad request management to add
-            String malformedRequest = "Hello, sorry, but I don't speak that way...\r\n\r\n";
-            out.write(malformedRequest);
-            out.flush();*/
-
-            //Scanner sa = new Scanner(System.in);
             out.write(val);
             out.flush();
 
@@ -70,6 +62,7 @@ public class Client {
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, ex.toString(), ex);
         } finally {
+            // Code fourni
             try {
                 if (out != null) out.close();
             } catch (IOException ex) {
