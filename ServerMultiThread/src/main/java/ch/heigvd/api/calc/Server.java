@@ -37,13 +37,13 @@ public class Server {
          */
         ServerSocket serverSocket;
         Socket clientSocket;
-        ExecutorService pool;
         try {
             serverSocket = new ServerSocket(1313);
-            pool = Executors.newFixedThreadPool(16);
             while (true) {
                 clientSocket = serverSocket.accept();
-                pool.execute(new ServerWorker(clientSocket));
+                ServerWorker worker = new ServerWorker(clientSocket);
+                Thread thread = new Thread(worker);
+                thread.start();
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

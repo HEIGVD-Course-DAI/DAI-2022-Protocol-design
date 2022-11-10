@@ -15,6 +15,9 @@ public class Client {
     private static final String HOST = "127.0.0.1";
     private static final int PORT = 1313;
 
+    private static boolean isConnected = true;
+
+
     private static final Logger LOG = Logger.getLogger(Client.class.getName());
 
     public static void execute(BufferedReader stdin, BufferedReader in, BufferedWriter out) {
@@ -25,13 +28,23 @@ public class Client {
          *
          * TODO Test functionality once the server is done
          */
-
         try {
-            String input = stdin.readLine();
-            out.write(input);
+            String input = "";
+            input = stdin.readLine();
+            if(input.equals("CLOSE")) {
+                isConnected = false;
+                return;
+            }
+            out.write(input + "\n");
             out.flush();
-            String result = in.readLine();
-            System.out.println("" + input + " = " + result);
+            char[] buffer = new char[1024];
+            in.read(buffer, 0, 1024);
+            for(int i = 0; i < 1024; i++) {
+                if(buffer[i] == '$') {
+                System.out.print(new String(buffer, 0, i));
+                    break;
+                }
+            }
         } catch (Exception e) {
             throw new RuntimeException("Couldn't communicate with server.");
         }
@@ -50,26 +63,17 @@ public class Client {
 
         BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
 
-        /* DONE: Implement the client here, according to your specification
-         *   The client has to do the following:
-         *   - connect to the server
-         *   - initialize the dialog with the server according to your specification
-         *   - In a loop:
-         *     - read the command from the user on stdin (already created)
-         *     - send the command to the server
-         *     - read the response line from the server (using BufferedReader.readLine)
-         */
-
-        boolean running = true;
-
         try (Socket socket = new Socket(HOST, PORT);
              BufferedReader fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
              BufferedWriter toServer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()))) {
-            while (running) {
+            System.out.println("Please write WELCOME to start talking to the server.");
+            do {
                 execute(stdin, fromServer, toServer);
+                /*
                 System.out.println("Do you want to execute another calculation ? (y/n): ");
                 running = stdin.readLine().equalsIgnoreCase("y");
-            }
+                 */
+            }while (isConnected);
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }

@@ -38,6 +38,8 @@ public class Server {
             serverSocket = new ServerSocket(1313);
             while (true) {
                 clientSocket = serverSocket.accept();
+                in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), "UTF-8"));
+                out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
                 handleClient(clientSocket);
             }
         } catch (IOException e) {
@@ -63,6 +65,7 @@ public class Server {
          *     - Handle the message
          *     - Send to result to the client
          */
+
         boolean connectionActive = true;
         boolean firstTime = true;
         while (connectionActive) {
