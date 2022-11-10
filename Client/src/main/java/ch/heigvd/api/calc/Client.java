@@ -40,7 +40,7 @@ public class Client {
             char[] buffer = new char[1024];
             in.read(buffer, 0, 1024);
             for(int i = 0; i < 1024; i++) {
-                if(buffer[i] == '$') {
+                if(buffer[i] == '\0') {
                 System.out.print(new String(buffer, 0, i));
                     break;
                 }
@@ -69,10 +69,6 @@ public class Client {
             System.out.println("Please write WELCOME to start talking to the server.");
             do {
                 execute(stdin, fromServer, toServer);
-                /*
-                System.out.println("Do you want to execute another calculation ? (y/n): ");
-                running = stdin.readLine().equalsIgnoreCase("y");
-                 */
             }while (isConnected);
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());

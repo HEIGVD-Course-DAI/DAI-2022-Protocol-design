@@ -90,7 +90,6 @@ public class ServerWorker implements Runnable {
         try {
             out.write(s);
             out.newLine();
-            out.write("$");
             out.flush();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -103,7 +102,6 @@ public class ServerWorker implements Runnable {
             out.write("CALC <number> <operator> <number> : available operators are ADD, SUB, MUL and DIV\n");
             out.write("CLOSE : close the connection\n");
             out.write("HELP : display the list of commands\n");
-            out.write("$");
             out.flush();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -115,19 +113,16 @@ public class ServerWorker implements Runnable {
                 case "ADD":
                     out.write("RESULT : " + (a + b));
                     out.newLine();
-                    out.write("$");
                     out.flush();
                     break;
                 case "SUB":
                     out.write("RESULT : " + (a - b));
                     out.newLine();
-                    out.write("$");
                     out.flush();
                     break;
                 case "MUL":
                     out.write("RESULT : " + (a * b));
                     out.newLine();
-                    out.write("$");
                     out.flush();
                     break;
                 case "DIV":
@@ -136,7 +131,6 @@ public class ServerWorker implements Runnable {
                     } else {
                         out.write("RESULT : " + ((float) a / b));
                         out.newLine();
-                        out.write("$");
                         out.flush();
                     }
                     break;
