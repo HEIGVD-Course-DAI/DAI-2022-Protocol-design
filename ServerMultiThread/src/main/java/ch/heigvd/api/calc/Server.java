@@ -13,26 +13,41 @@ public class Server {
 
     private final static Logger LOG = Logger.getLogger(Server.class.getName());
 
-    /**
-     * Main function to start the server
-     */
+    //Main function to start the server
     public static void main(String[] args) {
         // Log output on a single line
         System.setProperty("java.util.logging.SimpleFormatter.format", "%4$s: %5$s%6$s%n");
-
         (new Server()).start();
     }
 
-    /**
-     * Start the server on a listening socket.
-     */
-    private void start() {
+    //Start the server on a listening socket.
+    private void start(){
 
-        /* TODO: implement the receptionist server here.
-         *  The receptionist just creates a server socket and accepts new client connections.
-         *  For a new client connection, the actual work is done in a new thread
-         *  by a new ServerWorker.
-         */
+        ServerSocket serverSocket = null;
+        Socket clientSocket = null;
+        // Create the server socket
+        try{
+            serverSocket = new ServerSocket(2022);
+            // Waiting for new clients to connect
+            while (true) {
+                clientSocket = serverSocket.accept();
+                // Create new thread to handle this client
+                ServerWorker worker = new ServerWorker(clientSocket);
+                Thread thread = new Thread(worker);
+                thread.start();
+            }
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
+        finally{
+            try{
+                serverSocket.close();
+            }
+            catch(Exception closeEx){
+                closeEx.printStackTrace();
+            }
 
+        }
     }
 }
