@@ -10,7 +10,8 @@ import java.util.logging.Logger;
  * Calculator server implementation - single threaded
  */
 public class Server {
-
+    private BufferedReader in;
+    private BufferedWriter out;
     private final static Logger LOG = Logger.getLogger(Server.class.getName());
 
     /**
@@ -27,10 +28,18 @@ public class Server {
      * Start the server on a listening socket.
      */
     private void start() {
-        /* TODO: implement the receptionist server here.
-         *  The receptionist just creates a server socket and accepts new client connections.
-         *  For a new client connection, the actual work is done by the handleClient method below.
-         */
+        ServerSocket serverSocket;
+        Socket clientSocket;
+        try {
+            serverSocket = new ServerSocket(1313);
+            while (true) {
+                clientSocket = serverSocket.accept();
+                handleClient(clientSocket);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
 
     }
 
@@ -41,15 +50,110 @@ public class Server {
      */
     private void handleClient(Socket clientSocket) {
 
-        /* TODO: implement the handling of a client connection according to the specification.
-         *   The server has to do the following:
-         *   - initialize the dialog according to the specification (for example send the list
-         *     of possible commands)
-         *   - In a loop:
-         *     - Read a message from the input stream (using BufferedReader.readLine)
-         *     - Handle the message
-         *     - Send to result to the client
-         */
 
+        try{
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), "UTF-8"));
+            out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
+            while (!clientSocket.isClosed()) {
+                String message = in.readLine();
+                System.out.println("message received: " + message);
+                if(message.startsWith("CALC")){
+                    String[] parts = message.split(" ");
+                    if(parts.length != 4){
+                        sendError("The CALC command must follow the format CALC <number> <operator> <number>");
+                    }else{
+                        try{
+                            int a = Integer.parseInt(parts[1]);
+                            int b = Integer.parseInt(parts[3]);
+                            sendResult(a,b,parts[2]);
+                        }catch (NumberFormatException e){
+                            sendError("the numbers must be integers");
+                        }
+                    }
+                }
+                else if (message.startsWith("CLOSE")){
+                    in.close();
+                    out.close();
+                }
+                else if(message.startsWith("WELCOME")){
+                    sendWelcome();
+                }
+                else if(message.startsWith("HELP")){
+                    sendCommands();
+                }
+                else{
+                    sendError("invalid command");
+                }
+
+            }
+
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public void sendWelcome(){
+        try {
+            out.write("WELCOME !\n");
+            sendCommands();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public void sendError(String s){
+        try {
+            out.write(s);
+            out.newLine();
+            out.flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public void sendCommands(){
+        try {
+            out.write("COMMANDS :\n");
+            out.write("WELCOME : display the welcome message\n");
+            out.write("CALC <number> <operator> <number> : available operators are ADD, SUB, MUL and DIV\n");
+            out.write("CLOSE : close the connection\n");
+            out.write("HELP : display the list of commands\n");
+            out.flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public void sendResult(int a, int b, String operator){
+        try {
+            switch (operator) {
+                case "ADD":
+                    out.write("RESULT : " + (a + b));
+                    out.newLine();
+                    out.flush();
+                    break;
+                case "SUB":
+                    out.write("RESULT : " + (a - b));
+                    out.newLine();
+                    out.flush();
+                    break;
+                case "MUL":
+                    out.write("RESULT : " + (a * b));
+                    out.newLine();
+                    out.flush();
+                    break;
+                case "DIV":
+                    if (b == 0) {
+                        sendError("Division by zero is not allowed");
+                    } else {
+                        out.write("RESULT : " + ((float) a / b));
+                        out.newLine();
+                        out.flush();
+                    }
+                    break;
+                default:
+                    sendError("invalid operator");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

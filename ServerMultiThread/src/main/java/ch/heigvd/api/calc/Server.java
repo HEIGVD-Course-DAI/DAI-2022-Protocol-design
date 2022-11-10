@@ -3,6 +3,8 @@ package ch.heigvd.api.calc;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,11 +30,19 @@ public class Server {
      */
     private void start() {
 
-        /* TODO: implement the receptionist server here.
-         *  The receptionist just creates a server socket and accepts new client connections.
-         *  For a new client connection, the actual work is done in a new thread
-         *  by a new ServerWorker.
-         */
+        ServerSocket serverSocket;
+        Socket clientSocket;
+        try {
+            serverSocket = new ServerSocket(1313);
+            while (true) {
+                clientSocket = serverSocket.accept();
+                ServerWorker worker = new ServerWorker(clientSocket);
+                Thread thread = new Thread(worker);
+                thread.start();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 }
