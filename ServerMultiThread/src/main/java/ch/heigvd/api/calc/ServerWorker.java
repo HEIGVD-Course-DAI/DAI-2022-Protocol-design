@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 public class ServerWorker implements Runnable {
 
     private final static Logger LOG = Logger.getLogger(ServerWorker.class.getName());
+    Socket clientSocket;
 
     /**
      * Instantiation of a new worker mapped to a socket
@@ -26,7 +27,7 @@ public class ServerWorker implements Runnable {
          *   server calls the ServerWorker.run method.
          *   Don't call the ServerWorker.run method here. It has to be called from the Server.
          */
-
+        this.clientSocket = clientSocket;
     }
 
     /**
