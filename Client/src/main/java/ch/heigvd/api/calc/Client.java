@@ -1,7 +1,11 @@
 package ch.heigvd.api.calc;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.Socket;
+import java.nio.Buffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,6 +37,22 @@ public class Client {
          *     - read the response line from the server (using BufferedReader.readLine)
          *
          */
+
+
+        Socket clientSocket = null;
+        BufferedWriter clientOut;
+        BufferedReader clientIn;
+
+        try{
+            clientSocket = new Socket("localhost", 2019);
+            clientOut = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
+            clientIn = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            stdin = new BufferedReader(new InputStreamReader(System.in));
+        } catch (Exception e) {
+            LOG.log(Level.SEVERE,"Error while creating socket", e);
+        }
+        String inut = "";
+
 
 
         stdin = new BufferedReader(new InputStreamReader(System.in));
