@@ -31,7 +31,9 @@ public class Client {
          *     - read the command from the user on stdin (already created)
          *     - send the command to the server
          *     - read the response line from the server (using BufferedReader.readLine)
+         *
          */
+
 
         stdin = new BufferedReader(new InputStreamReader(System.in));
 
